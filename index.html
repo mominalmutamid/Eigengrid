@@ -80,6 +80,25 @@ aside{width:340px;flex:none;background:var(--card);border-right:1px solid var(--
 .sv span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #pv{display:flex;flex-direction:column;gap:6px}
 #pv img{width:100%;display:block;border:1px solid var(--line);border-radius:10px}
+.bar{padding:4px 10px;gap:10px;flex-wrap:nowrap}
+.seg button{min-height:34px;padding:0 12px}
+.pri{min-height:38px}
+#ph{display:none}
+.zm{flex-direction:row;right:10px;bottom:10px;gap:6px}
+.zm button{width:36px;height:36px;font-size:16px;background:rgba(255,255,255,.88)}
+@media (max-width:760px){
+.bar{padding:4px 8px;gap:6px}
+.brand{font-size:16px}
+.seg{padding:3px}.seg button{min-height:34px;padding:0 10px;font-size:13px}
+.pri{padding:0 12px}.et{display:none}
+.sp{display:block;flex:1}
+aside{height:38%;padding:8px 12px;gap:8px}
+#ph{display:flex;align-items:center;justify-content:space-between;border:0;background:none;padding:0;min-height:32px;font-weight:600;font-size:13px;color:var(--mut);cursor:pointer;flex:none}
+.chip{min-height:42px}
+#app.pc aside{height:auto;overflow:hidden}
+#app.pc aside>*:not(#ph){display:none}
+#app.pc #kb{display:none}
+}
 </style>
 </head>
 <body>
@@ -87,15 +106,16 @@ aside{width:340px;flex:none;background:var(--card);border-right:1px solid var(--
 <header class="bar"><div class="brand">Graphify</div>
 <div class="seg"><button data-m="plot" class="on">2D</button><button data-m="surf">3D</button><button data-m="art">Art</button></div>
 <div class="sp"></div>
-<label class="th"><span>Theme</span><select id="theme" aria-label="Theme"><option value="light">Cameo light</option><option value="stone">Stone</option></select></label>
-<button class="pri" id="save"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Export PNG</button>
+<button class="pri" id="save" aria-label="Export PNG"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="et">Export PNG</span></button>
 </header>
 <main>
 <aside>
+<button id="ph" aria-expanded="true"><span id="pht">Hide panel</span><span id="pha" aria-hidden="true">▾</span></button>
 <div class="row"><span class="lbl">Expressions</span><button class="sec" id="kbt" aria-pressed="false">Math keypad</button></div><div id="chips"></div>
 <div class="lbl">Parameters</div><div id="params"></div>
 <div id="tbox"><div class="lbl">Tools</div><label class="row">Apply to <select id="tf" aria-label="Curve for tools"></select></label><div class="mut" id="tout" role="status"></div><div id="tools"></div></div>
 <div class="lbl">Export options</div>
+<label class="row">Theme <select id="theme" aria-label="Theme"><option value="light">Cameo light</option><option value="stone">Stone</option></select></label>
 <label class="chk"><input type="checkbox" id="kGrid" checked> Grid and axes</label>
 <label class="chk"><input type="checkbox" id="kCap" checked> Equation caption</label>
 <label class="row">Image size <select id="sz"><option value="1">1x</option><option value="2" selected>2x</option><option value="4">4x</option></select></label>
@@ -297,10 +317,21 @@ for(let q=0;q<8;q++){const w=V[((k+(q>>2))*M+(j+((q>>1)&1)))*M+i+(q&1)];if(!isFi
 t.vc={key,val:s0}}
 ctx.strokeStyle=CL;ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();[[x1,y1],[x2,y1],[x2,y2],[x1,y2]].forEach(([u,w],i)=>{const p=pr(u,w,0);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])});ctx.closePath();ctx.stroke();ctx.setLineDash([]);
 S.out.push((imp?'Volume where F < 0 ≈ ':'Signed volume ≈ ')+fm(t.vc.val)+(imp?' (grid estimate, z from −5 to 5)':'')+'\nover x in ['+fm(x1)+', '+fm(x2)+'], y in ['+fm(y1)+', '+fm(y2)+']')}}
+function pack(P){const n=P.length,vx=new Float32Array(n*12),nn=new Float32Array(n*3),nv=new Uint8Array(n);
+P.forEach((f,i)=>{nv[i]=f.p.length;f.p.forEach((p,j)=>{vx[i*12+j*3]=p[0];vx[i*12+j*3+1]=p[1];vx[i*12+j*3+2]=p[2]});nn.set(f.n,i*3)});return{cnt:n,vx,nn,nv}}
+const BUF={n:0},PALC={};
+function palette(h){if(PALC[h])return PALC[h];const rgb=hx(h),a=[];for(let i=0;i<32;i++){const m=0.5+0.65*i/31;a.push('rgb('+rgb.map(v=>Math.min(255,Math.round(v*m))).join(',')+')')}return PALC[h]=a}
+function evalImp(it,key){const c=it.c,sc=Object.assign({},S.params),n=S.lists.surf.filter(x=>x.c&&x.c.k==='imp').length,N=n>1?24:30,R=5,h=2*R/N,M=N+1,V=new Float64Array(M*M*M);let k=0;
+const step=()=>{if(it.mb!==key)return;const t0=performance.now();
+while(k<=N&&performance.now()-t0<10){for(let j=0;j<=N;j++)for(let i=0;i<=N;i++){sc.x=-R+i*h;sc.y=-R+j*h;sc.z=-R+k*h;V[(k*M+j)*M+i]=ev(c,sc)}k++}
+if(k<=N){setTimeout(step,0);return}
+try{it.m=mesh(it,key,V,N)}catch(e){it.m={key,cnt:0,vx:new Float32Array(0),nn:new Float32Array(0),nv:new Uint8Array(0)}}
+it.mb=null;req()};
+step()}
 function pk(it){const p=Object.assign({},S.params);if(!/\btime\b/.test(it.e))delete p.time;return it.e+JSON.stringify(p)}
-function mesh(it,key){const sc=Object.assign({},S.params),P=[],R=5;
-if(it.c.k==='imp'){const N=30,h=2*R/N,M=N+1,V=new Float64Array(M*M*M),ix=(i,j,k)=>(k*M+j)*M+i;
-for(let k=0;k<=N;k++)for(let j=0;j<=N;j++)for(let i=0;i<=N;i++){sc.x=-R+i*h;sc.y=-R+j*h;sc.z=-R+k*h;V[ix(i,j,k)]=ev(it.c,sc)}
+function mesh(it,key,V0,N0){const sc=Object.assign({},S.params),P=[],R=5;
+if(it.c.k==='imp'){const N=N0||30,h=2*R/N,M=N+1,V=V0||new Float64Array(M*M*M),ix=(i,j,k)=>(k*M+j)*M+i;
+if(!V0)for(let k=0;k<=N;k++)for(let j=0;j<=N;j++)for(let i=0;i<=N;i++){sc.x=-R+i*h;sc.y=-R+j*h;sc.z=-R+k*h;V[ix(i,j,k)]=ev(it.c,sc)}
 const cl=v=>Math.min(N-1,Math.max(1,Math.round((v+R)/h)));
 const gr=(x,y,z)=>{const i=cl(x),j=cl(y),k=cl(z),g=[V[ix(i+1,j,k)]-V[ix(i-1,j,k)],V[ix(i,j+1,k)]-V[ix(i,j-1,k)],V[ix(i,j,k+1)]-V[ix(i,j,k-1)]],l=Math.hypot(g[0],g[1],g[2]);return l>0&&isFinite(l)?[g[0]/l,g[1]/l,g[2]/l]:[0,0,1]};
 const tri=p=>P.push({p,n:gr((p[0][0]+p[1][0]+p[2][0])/3,(p[0][1]+p[1][1]+p[2][1])/3,(p[0][2]+p[1][2]+p[2][2])/3)});
@@ -312,14 +343,14 @@ if(c.some(p=>!isFinite(p[3])))continue;
 for(const t of CT){const A=[],B=[];t.forEach(q=>(c[q][3]>0?A:B).push(c[q]));if(!A.length||!B.length)continue;
 if(A.length===1||B.length===1){const s1=A.length===1?A[0]:B[0],o2=A.length===1?B:A;tri(o2.map(q=>I(s1,q)))}
 else{const q0=I(A[0],B[0]),q1=I(A[0],B[1]),q2=I(A[1],B[1]),q3=I(A[1],B[0]);tri([q0,q1,q2]);tri([q0,q2,q3])}}}
-return{key,P,V,N,R}}
+return{key,V,N,R,...pack(P)}}
 const N=44,Z=[];
 for(let j=0;j<=N;j++){Z.push([]);for(let i=0;i<=N;i++){sc.x=-R+2*R*i/N;sc.y=-R+2*R*j/N;let z=ev(it.c,sc);if(!(Math.abs(z)<=R))z=NaN;Z[j].push(z)}}
 const G=(i,j)=>{const z=Z[j][i];return isFinite(z)?[-R+2*R*i/N,-R+2*R*j/N,z]:null};
 for(let j=0;j<N;j++)for(let i=0;i<N;i++){const q=[G(i,j),G(i+1,j),G(i+1,j+1),G(i,j+1)];if(q.some(p=>!p))continue;
 const d1=[q[2][0]-q[0][0],q[2][1]-q[0][1],q[2][2]-q[0][2]],d2=[q[3][0]-q[1][0],q[3][1]-q[1][1],q[3][2]-q[1][2]],n=[d1[1]*d2[2]-d1[2]*d2[1],d1[2]*d2[0]-d1[0]*d2[2],d1[0]*d2[1]-d1[1]*d2[0]],l=Math.hypot(n[0],n[1],n[2])||1;
 P.push({p:q,n:[n[0]/l,n[1]/l,n[2]/l]})}
-return{key,P}}
+return{key,...pack(P)}}
 function surf(ctx,W,H,T,o){const a=S.rot.a,b=S.rot.b,ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b),B=5,u=Math.min(W,H)*0.5/7.2*S.zoom;
 const pr=(x,y,z)=>{const x1=x*ca-y*sa,y1=x*sa+y*ca;return[W/2+x1*u,H/2-(z*cb+y1*sb)*u,y1*cb-z*sb]};
 const ln=(p,q)=>{const A=pr(...p),C=pr(...q);ctx.moveTo(A[0],A[1]);ctx.lineTo(C[0],C[1])};
@@ -330,11 +361,22 @@ ctx.globalAlpha=.75;ctx.lineWidth=1.8;ctx.beginPath();ln([-B,0,0],[B,0,0]);ln([0
 ctx.globalAlpha=1;ctx.fillStyle=T.axis;ctx.textAlign='center';ctx.font='600 14px "DM Sans",sans-serif';
 [[1,0,0,'x'],[0,1,0,'y'],[0,0,1,'z']].forEach(([x,y,z,l])=>{const p=pr(x*B*1.12,y*B*1.12,z*B*1.12);ctx.fillText(l,p[0],p[1]+5)});
 ctx.font='11px "DM Sans",sans-serif';[[B,0,0,'5'],[-B,0,0,'\u22125'],[0,B,0,'5'],[0,-B,0,'\u22125'],[0,0,B,'5'],[0,0,-B,'\u22125']].forEach(([x,y,z,l])=>{const p=pr(x,y,z);ctx.fillText(l,p[0]+9,p[1]-6)})}
-const polys=[];S.lists.surf.forEach((it,k)=>{if(!it.c)return;const key=pk(it);if(!it.m||it.m.key!==key)it.m=mesh(it,key);const rgb=hx(colOf(it,k));
-it.m.P.forEach(f=>{const q=f.p.map(p=>pr(p[0],p[1],p[2])),n=f.n,x1=n[0]*ca-n[1]*sa,y1=n[0]*sa+n[1]*ca,up=n[2]*cb+y1*sb,dp=y1*cb-n[2]*sb,l=Math.min(1,Math.abs(-0.3*x1+0.5*up-0.8*dp)/0.99),m=0.5+0.65*l;
-polys.push({q,d:q.reduce((t,p)=>t+p[2],0)/q.length,c:'rgb('+rgb.map(v=>Math.min(255,Math.round(v*m))).join(',')+')'})})});
-polys.sort((m,n)=>n.d-m.d);ctx.lineWidth=0.8;ctx.lineJoin='round';
-for(const f of polys){ctx.fillStyle=f.c;ctx.strokeStyle=f.c;ctx.beginPath();ctx.moveTo(f.q[0][0],f.q[0][1]);for(let n=1;n<f.q.length;n++)ctx.lineTo(f.q[n][0],f.q[n][1]);ctx.closePath();ctx.fill();ctx.stroke()}
+const ms=[];let T0=0;
+S.lists.surf.forEach((it,k)=>{if(!it.c)return;const key=pk(it);
+if(!it.m||it.m.key!==key){if(it.c.k==='imp'){if(it.mb!==key){it.mb=key;evalImp(it,key)}}else it.m=mesh(it,key)}
+if(!it.m)return;ms.push({m:it.m,pal:palette(colOf(it,k))});T0+=it.m.cnt});
+if(S.lists.surf.some(i=>i.mb))S.out.push('Updating 3D surface…');
+if(T0>BUF.n){BUF.n=Math.floor(T0*1.3)+16;BUF.sx=new Float32Array(BUF.n*8);BUF.d=new Float32Array(BUF.n);BUF.l=new Uint8Array(BUF.n);BUF.mi=new Uint8Array(BUF.n);BUF.pi=new Uint8Array(BUF.n);BUF.o=new Int32Array(BUF.n)}
+const{sx,d,l,mi,pi,o:ord}=BUF;let n=0,dmin=1e9,dmax=-1e9;
+ms.forEach(({m},q)=>{const vx=m.vx,nn=m.nn,nv=m.nv;for(let i=0;i<m.cnt;i++){const c4=nv[i];let dd=0;
+for(let j=0;j<c4;j++){const x=vx[i*12+j*3],y=vx[i*12+j*3+1],z=vx[i*12+j*3+2],x1=x*ca-y*sa,y1=x*sa+y*ca;sx[n*8+j*2]=W/2+x1*u;sx[n*8+j*2+1]=H/2-(z*cb+y1*sb)*u;dd+=y1*cb-z*sb}
+dd/=c4;d[n]=dd;if(dd<dmin)dmin=dd;if(dd>dmax)dmax=dd;
+const nx=nn[i*3],ny=nn[i*3+1],nzz=nn[i*3+2],x1=nx*ca-ny*sa,y1=nx*sa+ny*ca,up=nzz*cb+y1*sb,dp=y1*cb-nzz*sb,lv=Math.min(1,Math.abs(-0.3*x1+0.5*up-0.8*dp)/0.99);
+l[n]=Math.min(31,Math.floor(lv*31));mi[n]=q;pi[n]=c4;n++}});
+if(n){const NB=1024,cnt=new Int32Array(NB+1),span=(dmax-dmin)||1,bk=i=>Math.min(NB-1,Math.floor((dmax-d[i])/span*NB));
+for(let i=0;i<n;i++)cnt[bk(i)+1]++;for(let i=0;i<NB;i++)cnt[i+1]+=cnt[i];for(let i=0;i<n;i++)ord[cnt[bk(i)]++]=i;
+ctx.lineWidth=0.8;ctx.lineJoin='round';const fast=S.drag||S.anim;
+for(let t=0;t<n;t++){const i=ord[t],c4=pi[i],st=ms[mi[i]].pal[l[i]];ctx.fillStyle=st;ctx.beginPath();ctx.moveTo(sx[i*8],sx[i*8+1]);for(let j=1;j<c4;j++)ctx.lineTo(sx[i*8+j*2],sx[i*8+j*2+1]);ctx.closePath();ctx.fill();if(!fast){ctx.strokeStyle=st;ctx.stroke()}}}
 tools3(ctx,T,pr)}
 function caption(ctx,W,H,T){
 const pretty=e=>e.replace(/\*/g,'·').replace(/\^2(?![0-9])/g,'²').replace(/\^3(?![0-9])/g,'³').replace(/\bsqrt\(/g,'√(').replace(/\bpi\b/g,'π').replace(/\s+/g,' ');
@@ -355,13 +397,13 @@ function zoom(f,p){if(S.mode!=='surf'){const v=S.view,x=v.cx+(p[0]-W/2)/v.s,y=v.
 else S.zoom=Math.max(0.4,Math.min(3,S.zoom*f))}
 const ptr=new Map();let pd=0;
 const pdist=()=>{const p=[...ptr.values()];return p.length===2?Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]):0};
-cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);pd=pdist()});
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);pd=pdist();S.drag=true});
 cv.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId))return;const o=ptr.get(e.pointerId);ptr.set(e.pointerId,[e.clientX,e.clientY]);
 if(ptr.size===1){const dx=e.clientX-o[0],dy=e.clientY-o[1];
 if(S.mode!=='surf'){S.view.cx-=dx/S.view.s;S.view.cy+=dy/S.view.s}else{S.rot.a+=dx*0.01;S.rot.b=Math.max(0.1,Math.min(1.5,S.rot.b+dy*0.01))}}
 else if(ptr.size===2){const d=pdist(),p=[...ptr.values()],r=cv.getBoundingClientRect();if(pd)zoom(d/pd,[(p[0][0]+p[1][0])/2-r.left,(p[0][1]+p[1][1])/2-r.top]);pd=d}
 req()});
-['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,e=>{ptr.delete(e.pointerId);pd=pdist()}));
+['pointerup','pointercancel'].forEach(n=>cv.addEventListener(n,e=>{ptr.delete(e.pointerId);pd=pdist();if(!ptr.size){S.drag=false;req()}}));
 cv.addEventListener('wheel',e=>{e.preventDefault();zoom(Math.exp(-e.deltaY*0.0015),[e.offsetX,e.offsetY]);req()},{passive:false});
 function renderParams(){const box=$('#params');box.textContent='';const seen=new Set();
 S.lists[S.mode].forEach(it=>{if(it.c)it.c.names.forEach(n=>seen.add(n))});
@@ -467,6 +509,7 @@ let t0=0,aid=0,pt=0,lt=0;
 function tick(ts){S.params.time=(ts-t0)/1000;if(S.mode==='surf')S.rot.a+=Math.min(0.1,(ts-lt)/1000)*0.6;lt=ts;req();aid=requestAnimationFrame(tick)}
 function setAnim(on){S.anim=on;cancelAnimationFrame(aid);const b=$('#anim');b.setAttribute('aria-pressed',String(on));b.textContent=on?'❚❚':'▶';if(on){t0=performance.now()-S.params.time*1000;lt=performance.now();aid=requestAnimationFrame(tick)}}
 $('#anim').addEventListener('click',()=>setAnim(!S.anim));
+$('#ph').addEventListener('click',()=>{const c=$('#app').classList.toggle('pc');$('#ph').setAttribute('aria-expanded',String(!c));$('#pht').textContent=c?'Show equations and settings':'Hide panel';$('#pha').textContent=c?'▴':'▾';if(c)closeKb()});
 function persist(){clearTimeout(pt);pt=setTimeout(()=>{try{localStorage.setItem('graphify.cur',JSON.stringify(snap()))}catch(e){}},500)}
 function snap(){const L=k=>S.lists[k].map(i=>({e:i.e,ci:i.ci,col:i.col}));return{mode:S.mode,theme:S.theme,grid:S.grid,cap:S.cap,scale:S.scale,params:Object.assign({},S.params,{time:0}),view:S.view,rot:S.rot,zoom:S.zoom,lists:{plot:L('plot'),surf:L('surf'),art:L('art')}}}
 function applySnap(o){const L=o.lists||{};['plot','surf','art'].forEach(k=>{if(Array.isArray(L[k]))S.lists[k]=L[k].map(i=>({e:String(i.e||''),ci:i.ci,col:i.col}));S.lists[k].forEach(it=>comp(it,k))});

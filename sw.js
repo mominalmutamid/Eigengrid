@@ -1,4 +1,4 @@
-const V='graphify-v5';
+const V='graphify-v7';
 const CORE=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','maskable-512.png'];
 const MATH='https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js';
 const FONTS='https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Newsreader:ital,wght@1,400&display=swap';
