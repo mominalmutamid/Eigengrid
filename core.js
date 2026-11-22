@@ -1,4 +1,4 @@
-/* Graphify core: state, themes, parser (comp/norm), shared helpers */
+/* EigenGrid core: state, themes, parser (comp/norm), shared helpers */
 const $=s=>document.querySelector(s);
 const TH={
 light:{bg:'#FFFFFF',grid:'#E6ECE7',axis:'#5A6A5F',ink:'#2B332E',c:['#52695A','#4F8A8B','#C27C5E','#6C85A6','#8A7F52'],lo:'#B3C5B6',hi:'#3F5A49',glow:0},

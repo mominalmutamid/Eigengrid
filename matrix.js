@@ -1,4 +1,4 @@
-/* Graphify matrix view: 2x2 plane and 3x3 space, eigenvalues */
+/* EigenGrid matrix view: 2x2 plane and 3x3 space, eigenvalues */
 function matA(){const m=S.mat,n=m.n,A=n===2?m.m2:m.m3,t=S.anim?(1-Math.cos(S.params.time*1.2))/2:m.t,I=n===2?[1,0,0,1]:[1,0,0,0,1,0,0,0,1],R=A.map((a,i)=>I[i]+t*(a-I[i]));R.t=t;return R}
 function arrow2(ctx,x0,y0,x1,y1,col,w){const a=Math.atan2(y1-y0,x1-x0),hl=10;ctx.setLineDash([]);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
 ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-hl*Math.cos(a-.4),y1-hl*Math.sin(a-.4));ctx.lineTo(x1-hl*Math.cos(a+.4),y1-hl*Math.sin(a+.4));ctx.closePath();ctx.fill()}

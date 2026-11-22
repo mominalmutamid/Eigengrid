@@ -7,15 +7,15 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Graphify</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Newsreader:ital,wght@1,400&display=swap">
+<title>EigenGrid</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="app">
 <div id="upd" hidden role="status"><span>A new version is ready.</span><button id="updb">Reload</button></div>
-<header class="bar"><div class="brand">Graphify</div>
+<header class="bar"><div class="brand">EigenGrid</div>
 <div class="seg"><button data-m="plot" class="on">2D</button><button data-m="surf">3D</button><button data-m="art">Art</button><button data-m="mat">Matrix</button></div>
 <div class="sp"></div>
 <button class="pri" id="save" aria-label="Export PNG"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="et">Export PNG</span></button>
@@ -75,6 +75,7 @@ Tap a curve to trace it. Drag to move, pinch to zoom.</div></details>
 <script src="tools2d.js"></script>
 <script src="matrix.js"></script>
 <script src="render3d.js"></script>
+<script src="typeset.js"></script>
 <script src="ui.js"></script>
 <script src="app.js"></script>
 <script>if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)){addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(r=>{r.addEventListener('updatefound',()=>{const w=r.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller){const u=document.getElementById('upd');if(u)u.hidden=false}})})}).catch(()=>{});const b=document.getElementById('updb');if(b)b.addEventListener('click',()=>location.reload())})}</script>

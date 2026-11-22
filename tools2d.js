@@ -1,4 +1,4 @@
-/* Graphify 2D tools: derivative/tangent/Riemann/Taylor/Newton, ODE, tables, intersections, data fitting */
+/* EigenGrid 2D tools: derivative/tangent/Riemann/Taylor/Newton, ODE, tables, intersections, data fitting */
 function der(c,k){if(k===0)return c.f;c.d=c.d||[];if(c.d[k]!==undefined)return c.d[k];let n=c.n;
 try{for(let i=0;i<k;i++)n=math.derivative(n,c.k==='pol'?'t':'x');c.d[k]=n.compile();if(k===1)c.ds=n.toString().replace(/ \* /g,'·')}catch(e){c.d[k]=null}return c.d[k]}
 function fillSel(){const m=S.mode==='surf'?'surf':'plot',kf=m==='surf'?'f3':'f',sel=$('#tf'),cur=sel.value;sel.textContent='';

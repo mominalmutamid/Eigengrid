@@ -1,4 +1,4 @@
-/* Graphify app logic: tools panel, animation, saves/history, trace, data fit, matrix controls, video, startup */
+/* EigenGrid app logic: tools panel, animation, saves/history, trace, data fit, matrix controls, video, startup */
 const TL=[['der','Derivative f′(x)',[]],['tan','Tangent line',[['x','tx',-10,10,.1]]],
 ['rie','Riemann sum and area',[['Method','rm',[['mid','Midpoint'],['left','Left'],['right','Right'],['trap','Trapezoid']]],['from','ra',-10,10,.1],['to','rb',-10,10,.1],['boxes','rn',1,100,1]]],
 ['tay','Taylor polynomial',[['centre','tc',-10,10,.1],['degree','tn',1,12,1]]],
@@ -64,15 +64,15 @@ if(P&&d<(best?best.d:30))best={d,x:P[0],y:P[1],col:colOf(it,i)}});
 S.trace=best?{x:best.x,y:best.y,col:best.col}:null;req()}
 async function saveFile(blob,fn){const url=URL.createObjectURL(blob);let dl=null;try{dl=window.claude?await claude.use('downloads'):null}catch(e){}
 if(dl){try{await dl.save({filename:fn,data:blob});return true}catch(e){if(e&&e.code==='declined')return true}}
-if(window.matchMedia&&matchMedia('(pointer: coarse)').matches&&navigator.canShare){try{const f=new File([blob],fn,{type:blob.type});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Graphify'});return true}}catch(e){if(e&&e.name==='AbortError')return true}}
+if(window.matchMedia&&matchMedia('(pointer: coarse)').matches&&navigator.canShare){try{const f=new File([blob],fn,{type:blob.type});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'EigenGrid'});return true}}catch(e){if(e&&e.name==='AbortError')return true}}
 const a=document.createElement('a');a.href=url;a.download=fn;document.body.append(a);a.click();a.remove();return false}
-$('#exj').addEventListener('click',async()=>{const txt=JSON.stringify({app:'graphify',version:1,graphs:[{name:'Current graph',data:snap()},...getL()]},null,1);
-const ok=await saveFile(new Blob([txt],{type:'application/json'}),'graphify-graphs.json');const ta=$('#xj');ta.value=txt;ta.hidden=false;
-msg(ok?'Graphs file ready.':'Download started. If nothing was saved, copy the text below into a file named graphify-graphs.json.')});
+$('#exj').addEventListener('click',async()=>{const txt=JSON.stringify({app:'eigengrid',version:1,graphs:[{name:'Current graph',data:snap()},...getL()]},null,1);
+const ok=await saveFile(new Blob([txt],{type:'application/json'}),'eigengrid-graphs.json');const ta=$('#xj');ta.value=txt;ta.hidden=false;
+msg(ok?'Graphs file ready.':'Download started. If nothing was saved, copy the text below into a file named eigengrid-graphs.json.')});
 $('#imp').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;
 f.text().then(t=>{try{const o=JSON.parse(t),arr=Array.isArray(o.graphs)?o.graphs:(o.lists?[{name:o.name||'Imported graph',data:o}]:[]),L=getL();let n=0;
 arr.forEach(g=>{if(g&&g.data&&g.data.lists){L.unshift({name:String(g.name||'Imported graph').slice(0,40),data:g.data,thumb:typeof g.thumb==='string'?g.thumb:undefined});n++}});
-if(!n)throw 0;localStorage.setItem('graphify.list',JSON.stringify(L.slice(0,50)));renderSaves();msg('Imported '+n+' graph(s).')}catch(err){msg('That file is not a Graphify graph file.')}});e.target.value=''});
+if(!n)throw 0;localStorage.setItem('graphify.list',JSON.stringify(L.slice(0,50)));renderSaves();msg('Imported '+n+' graph(s).')}catch(err){msg('That file is not a EigenGrid graph file.')}});e.target.value=''});
 function syncData(){$('#pts').value=S.data.txt;$('#fitm').value=S.data.fit;$('#fdeg').value=S.data.deg;$('#fdv').textContent=S.data.deg;$('#degr').hidden=S.data.fit!=='poly'}
 function addPt(px,py){const v=S.view,r=n=>+n.toFixed(2),x=v.cx+(px-W/2)/v.s,y=v.cy-(py-H/2)/v.s;S.data.txt=(S.data.txt.trim()?S.data.txt.replace(/\s+$/,'')+'\n':'')+r(x)+', '+r(y);syncData();req()}
 $('#pts').addEventListener('input',()=>{S.data.txt=$('#pts').value;req()});
@@ -97,14 +97,15 @@ syncMat();
 async function recVideo(){if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){msg('Video recording is not supported in this browser.');return}
 const secs=+$('#vdur').value,types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'],mt=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
 const was=S.anim;if(!was)setAnim(true);
-const k=Math.min(3,1080/Math.max(W,H)),rc=document.createElement('canvas');rc.width=Math.round(W*k);rc.height=Math.round(H*k);const rx=rc.getContext('2d');
-let on=true;const loop=()=>{if(!on)return;rx.setTransform(k,0,0,k,0,0);S.rec=true;try{draw(rx,W,H,TH[S.theme],{grid:S.grid,glow:S.glow,cap:S.cap})}finally{S.rec=false}requestAnimationFrame(loop)};loop();
+try{await Promise.all([document.fonts.load('20px "EG Math"'),document.fonts.load('700 15px "DM Sans"'),document.fonts.load('400 15px "DM Sans"')])}catch(e){}
+const T0=TH[S.theme],band=S.cap?capBand(W,T0):null,bh=band?band.h:0,k=Math.min(3,1080/Math.max(W,H+bh)),rc=document.createElement('canvas');rc.width=Math.round(W*k);rc.height=Math.round((H+bh)*k);const rx=rc.getContext('2d');
+let on=true;const loop=()=>{if(!on)return;rx.setTransform(k,0,0,k,0,0);S.rec=true;try{draw(rx,W,H,T0,{grid:S.grid,glow:S.glow,cap:false});if(band)band.dr(rx,H)}finally{S.rec=false}requestAnimationFrame(loop)};loop();
 let rec;try{rec=new MediaRecorder(rc.captureStream(30),mt?{mimeType:mt,videoBitsPerSecond:8e6}:{videoBitsPerSecond:8e6})}catch(e){on=false;if(!was)setAnim(false);msg('Video recording is not available here.');return}
 const chunks=[];rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};const done=new Promise(r=>{rec.onstop=r});
 rec.start(200);$('#vrec').disabled=true;let left=secs;msg('Recording… '+left+' s');const iv=setInterval(()=>{left--;if(left>0)msg('Recording… '+left+' s')},1000);
 await new Promise(r=>setTimeout(r,secs*1000));on=false;clearInterval(iv);rec.stop();await done;if(!was)setAnim(false);$('#vrec').disabled=false;
 const type=rec.mimeType||mt||'video/webm',blob=new Blob(chunks,{type}),ext=/mp4/.test(type)?'mp4':'webm',vp=$('#vpv');vp.src=URL.createObjectURL(blob);vp.hidden=false;
-const ok=await saveFile(blob,'graphify-art.'+ext);msg(ok?'Video ready.':'Download started. If nothing was saved, press and hold the video below.')}
+const ok=await saveFile(blob,'eigengrid-art.'+ext);msg(ok?'Video ready.':'Download started. If nothing was saved, press and hold the video below.')}
 $('#vrec').addEventListener('click',recVideo);
 const EX={plot:[['Sine with slider','y=a*sin(x)'],['Parabola','y=x^2/4'],['Circle','x^2+y^2=25'],['Polar rose','r=5*cos(3*t)'],['Inequality','y>x^2'],['Piecewise','y={x<0: -x, x>=0: x^2}'],['Slope field',"y'=x-y"],['Parametric','(cos(t), sin(2*t))'],['Absolute value','y=abs(x)']],
 surf:[['Wave','z=sin(x)*cos(y)'],['Ripple','z=sin(sqrt(x^2+y^2))'],['Saddle','z=(x^2-y^2)/4'],['Sphere','x^2+y^2+z^2=9'],['Cylinder','x^2+y^2=4'],['Torus','((2+cos(v))*cos(u), (2+cos(v))*sin(u), sin(v)); u=0..6.28, v=0..6.28'],['Helix','(cos(t), sin(t), t/3); t=0..20'],['Moving wave','z=sin(x+time)*cos(y)']],

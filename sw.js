@@ -1,7 +1,7 @@
-const V='graphify-v14';
-const CORE=['./','index.html','style.css','core.js','plot2d.js','tools2d.js','matrix.js','render3d.js','ui.js','app.js','manifest.webmanifest','icon-192.png','icon-512.png','maskable-512.png'];
+const V='eigengrid-v16';
+const CORE=['./','index.html','style.css','core.js','plot2d.js','tools2d.js','matrix.js','render3d.js','typeset.js','eigenmath.woff','ui.js','app.js','manifest.webmanifest','icon-192.png','icon-512.png','maskable-512.png'];
 const MATH='https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.2/math.min.js';
-const FONTS='https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Newsreader:ital,wght@1,400&display=swap';
+const FONTS='https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap';
 self.addEventListener('install',e=>{e.waitUntil((async()=>{
 const c=await caches.open(V);await c.addAll(CORE);
 try{await c.add(MATH)}catch(_){}

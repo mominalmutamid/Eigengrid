@@ -1,4 +1,4 @@
-/* Graphify UI: canvas, pointer input, expression chips, modes, theme, PNG export, math keypad */
+/* EigenGrid UI: canvas, pointer input, expression chips, modes, theme, PNG export, math keypad */
 const cv=$('#cv'),ctx=cv.getContext('2d');let W=0,H=0,dpr=1,raf=0;
 function fit(){const r=cv.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);W=r.width;H=r.height;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);req()}
 function paint(){raf=0;try{paintInner()}catch(e){msg('Could not draw this graph: '+(e&&e.message?e.message:'unknown error'))}}
@@ -63,20 +63,21 @@ else S.lists.surf=[{e:pick(['sin(sqrt(x^2+y^2))','cos(x*y/3)','(x^2-y^2)/6','sin
 S.lists[S.mode].forEach(it=>comp(it,S.mode));renderChips();renderParams();req()});
 function msg(t){$('#stat').textContent=t}
 $('#save').addEventListener('click',async()=>{
-try{await Promise.all([document.fonts.load('italic 400 16px Newsreader'),document.fonts.load('600 14px "DM Sans"')])}catch(e){}
-const k=S.scale,c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
-const x=c.getContext('2d');x.scale(k,k);draw(x,W,H,TH[S.theme],{grid:S.grid,glow:S.glow,cap:S.cap});
+try{await Promise.all([document.fonts.load('20px "EG Math"'),document.fonts.load('700 15px "DM Sans"'),document.fonts.load('400 15px "DM Sans"')])}catch(e){}
+const k=S.scale,T0=TH[S.theme],band=S.cap?capBand(W,T0):null,bh=band?band.h:0,c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round((H+bh)*k);
+const x=c.getContext('2d');x.scale(k,k);draw(x,W,H,T0,{grid:S.grid,glow:S.glow,cap:false});if(band)band.dr(x,H);
 const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob){msg('Could not make the image. Try a smaller size.');return}
-const url=URL.createObjectURL(blob),fn='graphify-art.png';$('#pvi').src=url;$('#pv').hidden=false;
+const url=URL.createObjectURL(blob),fn='eigengrid-art.png';$('#pvi').src=url;$('#pv').hidden=false;
 let done=false,dl=null;try{dl=window.claude?await claude.use('downloads'):null}catch(e){}
 if(dl){try{await dl.save({filename:fn,data:blob});done=true;msg('Image ready to save.')}catch(e){if(e&&e.code==='declined')done=true}}
-if(!done&&window.matchMedia&&matchMedia('(pointer: coarse)').matches&&navigator.canShare){try{const f=new File([blob],fn,{type:'image/png'});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Graphify'});done=true;msg('Choose Save image or Save to Files in the share sheet.')}}catch(e){if(e&&e.name==='AbortError')done=true}}
+if(!done&&window.matchMedia&&matchMedia('(pointer: coarse)').matches&&navigator.canShare){try{const f=new File([blob],fn,{type:'image/png'});if(navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'EigenGrid'});done=true;msg('Choose Save image or Save to Files in the share sheet.')}}catch(e){if(e&&e.name==='AbortError')done=true}}
 if(!done){const a=document.createElement('a');a.href=url;a.download=fn;document.body.append(a);a.click();a.remove();msg('Download started. If nothing was saved, press and hold the picture below and choose Save image.')}});
-const KP={a:[['x','x'],['y','y'],['z','z'],['7','7'],['8','8'],['9','9'],['÷','/'],['a','a'],['b','b'],['t','t'],['4','4'],['5','5'],['6','6'],['×','*'],['r','r'],['π','pi'],['e','e'],['1','1'],['2','2'],['3','3'],['−','-'],['x²','^2'],['xⁿ','^'],['√','sqrt('],['0','0'],['.','.'],['=','='],['+','+']],
+const KP={a:[['x','x'],['y','y'],['z','z'],['7','7'],['8','8'],['9','9'],['÷','/'],['a','a'],['b','b'],['t','t'],['4','4'],['5','5'],['6','6'],['×','*'],['r','r'],['π','pi'],['c','c'],['1','1'],['2','2'],['3','3'],['−','-'],['x²','^2'],['xⁿ','^'],['√','sqrt('],['0','0'],['.','.'],['=','='],['+','+']],
 f:[['sin','sin('],['cos','cos('],['tan','tan('],['asin','asin('],['acos','acos('],['atan','atan('],['abs','abs('],['ln','log('],['log','log10('],['exp','exp('],['sqrt','sqrt('],['floor','floor('],['ceil','ceil('],[',',','],['(','('],[')',')'],['^','^'],['=','='],['x','x'],['y','y'],['z','z'],['a','a'],['b','b'],['t','t'],['r','r'],['e','e'],['π','pi']]};
 KP.g=[['θ','θ'],['φ','φ'],['α','α'],['β','β'],['γ','γ'],['δ','δ'],['λ','λ'],['μ','μ'],['σ','σ'],['ω','ω'],['ρ','ρ'],['ε','ε'],['η','η'],['κ','κ'],['Φ','Φ'],['Ψ','Ψ'],['Ω','Ω'],['Δ','Δ'],['Σ','Σ'],['Π','Π'],['τ','τ']];
 KP.s=[['<','<'],['>','>'],['≤','<='],['≥','>='],['{','{'],['}','}'],[':',':'],[',',','],['abs','abs('],['and',' and '],['or',' or '],['?','?'],['π','pi'],['e','e'],["y′=","y'="],['x','x'],['y','y'],['(','('],[')',')'],['^','^'],['=','='],[';',';'],['..','..'],['u','u'],['v','v'],['t','t'],[',',','],['π','pi']];
-const PN={a:'f(x)',f:'αβγ',g:'<≤{}',s:'123'};let page='a',act=null;const app=$('#app'),kb=$('#kb');
+KP.l=[...'abcdefghijklmnopqrstuvwxyz'].map(x=>[x,x]).concat([["'","'"],[',',',']]);
+const PN={a:'abc',l:'f(x)',f:'αβγ',g:'<≤{}',s:'123'};let page='a',act=null;const app=$('#app'),kb=$('#kb');
 function buildKb(){kb.textContent='';const g=document.createElement('div');g.className='kr';kb.append(g);
 KP[page].forEach(([l,v],i)=>{const k=document.createElement('button');k.textContent=l;k.dataset.v=v;if(page!=='a'||(i%7<3&&i<21))k.className='k2';g.append(k)});
 const r=document.createElement('div');r.className='kr';kb.append(r);
@@ -87,7 +88,7 @@ const openKb=()=>{if(S.kbMode==='math'){app.classList.add('kbo');if(!kb.firstChi
 kb.addEventListener('mousedown',e=>e.preventDefault());kb.addEventListener('pointerdown',e=>e.preventDefault());
 kb.addEventListener('click',e=>{const k=e.target.closest('button');if(!k)return;const a=k.dataset.a;
 if(!a){ins(k.dataset.v);return}
-if(a==='pg'){page={a:'f',f:'g',g:'s',s:'a'}[page];buildKb();return}
+if(a==='pg'){page={a:'l',l:'f',f:'g',g:'s',s:'a'}[page];buildKb();return}
 if(!act||!act.isConnected)return;
 if(a==='D'){act.blur();closeKb();return}
 if(a==='P1'||a==='P2'){ins(a==='P1'?'(':')');return}

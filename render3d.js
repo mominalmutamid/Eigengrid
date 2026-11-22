@@ -1,4 +1,4 @@
-/* Graphify 3D: meshes, depth-buffer renderer, 3D tools, caption, draw() dispatcher, thumbnails */
+/* EigenGrid 3D: meshes, depth-buffer renderer, 3D tools, caption, draw() dispatcher, thumbnails */
 function clipA(poly,ax,k){const R=5,o=[],m=poly.length;for(let i=0;i<m;i++){const a=poly[i],b=poly[(i+1)%m],ia=k*a[ax]<=R,ib=k*b[ax]<=R;if(ia)o.push(a);if(ia!==ib){const t=(k*R-a[ax])/(b[ax]-a[ax]);o.push([a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1]),a[2]+t*(b[2]-a[2])])}}return o}
 function meshP(it,key,sc){const c=it.c,P=[],R=5,N=44,U=c.rg.u||[0,2*Math.PI],V=c.rg.v||[0,2*Math.PI],G=[];
 for(let j=0;j<=N;j++){G.push([]);for(let i=0;i<=N;i++){sc.u=U[0]+(U[1]-U[0])*i/N;sc.v=V[0]+(V[1]-V[0])*j/N;const p=c.fs.map(f=>evf(f,sc));G[j].push(p.every(z=>Math.abs(z)<=1e6)?p:null)}}
@@ -103,13 +103,5 @@ if(any){R2.c2.putImageData(R2.img,0,0);ctx.imageSmoothingEnabled=true;ctx.imageS
 S.lists.surf.forEach((it,k)=>{if(!it.c||it.c.k!=='pc3')return;const c=it.c,sc=Object.assign({},S.params),t0=(c.rg.t||[0,2*Math.PI])[0],t1=(c.rg.t||[0,2*Math.PI])[1];
 ctx.strokeStyle=colOf(it,k);ctx.lineWidth=3;ctx.beginPath();let pen=false;for(let i=0;i<=800;i++){sc.t=t0+(t1-t0)*i/800;const p=c.fs.map(f=>evf(f,sc));if(!p.every(isFinite)){pen=false;continue}const q=pr(p[0],p[1],p[2]);pen?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);pen=true}ctx.stroke()});
 tools3(ctx,T,pr)}
-function caption(ctx,W,H,T){
-const pretty=e=>e.replace(/\*/g,'·').replace(/\^2(?![0-9])/g,'²').replace(/\^3(?![0-9])/g,'³').replace(/\bsqrt\(/g,'√(').replace(/\bpi\b/g,'π').replace(/\s+/g,' ');
-const ex=S.mode==='mat'?('A = '+(S.mat.n===2?S.mat.m2:S.mat.m3).join(', ')):S.lists[S.mode].filter(i=>i.e.trim()).slice(0,3).map(i=>pretty(i.e.trim())).join('     ');
-ctx.save();ctx.strokeStyle=T.ink;ctx.globalAlpha=.18;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(24,H-54);ctx.lineTo(W-24,H-54);ctx.stroke();
-ctx.globalAlpha=.9;ctx.fillStyle=T.ink;ctx.textAlign='right';ctx.font='600 14px "DM Sans",sans-serif';ctx.fillText('Graphify',W-24,H-26);
-const bw=ctx.measureText('Graphify').width;ctx.textAlign='left';ctx.font='italic 400 16px Newsreader,Georgia,serif';
-let t=ex;const mw=W-48-bw-24;while(ctx.measureText(t).width>mw&&t.length>3)t=t.slice(0,-2);if(t!==ex)t=t.trim()+'…';
-ctx.fillText(t,24,H-26);ctx.restore()}
 function draw(ctx,W,H,T,o){ctx.fillStyle=T.bg;ctx.fillRect(0,0,W,H);ctx.lineCap='round';ctx.lineJoin='round';
-S.mode==='surf'?surf(ctx,W,H,T,o):S.mode==='mat'?matView(ctx,W,H,T,o):plot(ctx,W,H,T,o);if(o.cap)caption(ctx,W,H,T)}
+S.mode==='surf'?surf(ctx,W,H,T,o):S.mode==='mat'?matView(ctx,W,H,T,o):plot(ctx,W,H,T,o)}

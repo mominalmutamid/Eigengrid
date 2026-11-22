@@ -1,4 +1,4 @@
-/* Graphify 2D plotting: plot(), inequality shading, trace marker */
+/* EigenGrid 2D plotting: plot(), inequality shading, trace marker */
 function plot(ctx,W,H,T,o){const v=S.view,s=v.s;
 const gx=x=>W/2+(x-v.cx)*s,gy=y=>H/2-(y-v.cy)*s;
 if(o.grid){const raw=70/s,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p,st=p*(m>=5?5:m>=2?2:1);
