@@ -14,9 +14,10 @@ ctx.textAlign='center';for(let i=i0;i<=i1;i++)if(i)ctx.fillText(fmt(i*st),gx(i*s
 ctx.textAlign='right';for(let j=j0;j<=j1;j++)if(j)ctx.fillText(fmt(j*st),ax,gy(j*st)+4)}
 S.lists[S.mode].forEach((it,i)=>{if(!it.c)return;const c=it.c,sc=Object.assign({},S.params),col=colOf(it,i);
 ctx.strokeStyle=col;ctx.lineWidth=2.6;ctx.shadowColor=col;ctx.shadowBlur=o.glow?14:0;ctx.beginPath();
-if(c.k==='ex'){let pen=false,py=0;
+if(c.k==='ex'){let pen=false,py=0,pyw=0;
 for(let px=0;px<=W;px++){sc.x=v.cx+(px-W/2)/s;const y=ev(c,sc);if(!isFinite(y)){pen=false;continue}const Y=gy(y);
-if(pen&&Math.abs(Y-py)>H*1.5)pen=false;pen?ctx.lineTo(px,Y):ctx.moveTo(px,Y);pen=true;py=Y}}
+if(pen){const dj=Math.abs(Y-py);if(dj>H*1.5)pen=false;else if(dj>H*0.1){sc.x=v.cx+(px-0.5-W/2)/s;const ym=ev(c,sc);if(!isFinite(ym)||Math.abs(ym-(pyw+y)/2)>0.5*Math.abs(y-pyw))pen=false}}
+pen?ctx.lineTo(px,Y):ctx.moveTo(px,Y);pen=true;py=Y;pyw=y}}
 else if(c.k==='pol'){let pen=false;
 for(let t=0,dt=(S.anim||S.drag)?0.025:0.01;t<=12*Math.PI;t+=dt){sc.t=t;const r=ev(c,sc);if(!isFinite(r)){pen=false;continue}
 const X=gx(r*Math.cos(t)),Y=gy(r*Math.sin(t));pen?ctx.lineTo(X,Y):ctx.moveTo(X,Y);pen=true}}

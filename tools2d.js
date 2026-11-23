@@ -98,7 +98,8 @@ if(k==='ex'){pt=u=>{sc.x=u;return[u,ev(c,sc)]};G=(x,y)=>{sc.x=x;return y-ev(c,sc
 else if(k==='pol'){pt=u=>{sc.t=u;const r=ev(c,sc);return[r*Math.cos(u),r*Math.sin(u)]};a=0;b=12*Math.PI;N=2400}
 else return{G:k==='imp'?(x,y)=>{sc.x=x;sc.y=y;return ev(c,sc)}:undefined,segs:c.pseg||[]};
 const segs=[];let p=null,u0=0;
-for(let i=0;i<=N;i++){const u=a+(b-a)*i/N,q=pt(u);if(!isFinite(q[0])||!isFinite(q[1])){p=null;continue}const X=gx(q[0]),Y=gy(q[1]);if(p&&Math.abs(Y-p[1])<H*1.5&&Math.abs(X-p[0])<W*1.5)segs.push([p[0],p[1],X,Y,u0,u]);p=[X,Y];u0=u}
+for(let i=0;i<=N;i++){const u=a+(b-a)*i/N,q=pt(u);if(!isFinite(q[0])||!isFinite(q[1])){p=null;continue}const X=gx(q[0]),Y=gy(q[1]);let ok=true;if(p&&Math.abs(Y-p[1])>H*0.1){const qm=pt((u0+u)/2);ok=isFinite(qm[0])&&isFinite(qm[1])&&Math.abs(gy(qm[1])-(Y+p[1])/2)<=0.5*Math.abs(Y-p[1])}
+if(p&&ok&&Math.abs(Y-p[1])<H*1.5&&Math.abs(X-p[0])<W*1.5)segs.push([p[0],p[1],X,Y,u0,u]);p=[X,Y];u0=u}
 return{pt,G,segs}}
 function interTool(ctx,W,H,T,gx,gy,v,s,it){const A=cinfo(it,gx,gy,v,W,H,s),Bs=[],pts=[],xa=v.cx-W/2/s,xb=v.cx+W/2/s;
 S.lists.plot.forEach((o,j)=>{if(j!==S.tool.f&&o.c)Bs.push(cinfo(o,gx,gy,v,W,H,s))});
