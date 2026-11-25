@@ -14,10 +14,20 @@ ctx.textAlign='center';for(let i=i0;i<=i1;i++)if(i)ctx.fillText(fmt(i*st),gx(i*s
 ctx.textAlign='right';for(let j=j0;j<=j1;j++)if(j)ctx.fillText(fmt(j*st),ax,gy(j*st)+4)}
 S.lists[S.mode].forEach((it,i)=>{if(!it.c)return;const c=it.c,sc=Object.assign({},S.params),col=colOf(it,i);
 ctx.strokeStyle=col;ctx.lineWidth=2.6;ctx.shadowColor=col;ctx.shadowBlur=o.glow?14:0;ctx.beginPath();
-if(c.k==='ex'){let pen=false,py=0,pyw=0;
-for(let px=0;px<=W;px++){sc.x=v.cx+(px-W/2)/s;const y=ev(c,sc);if(!isFinite(y)){pen=false;continue}const Y=gy(y);
-if(pen){const dj=Math.abs(Y-py);if(dj>H*1.5)pen=false;else if(dj>H*0.1){sc.x=v.cx+(px-0.5-W/2)/s;const ym=ev(c,sc);if(!isFinite(ym)||Math.abs(ym-(pyw+y)/2)>0.5*Math.abs(y-pyw))pen=false}}
-pen?ctx.lineTo(px,Y):ctx.moveTo(px,Y);pen=true;py=Y;pyw=y}}
+if(c.k==='ex'){const F=x=>{sc.x=x;return ev(c,sc)},vis=Y=>Y>-0.5*H&&Y<1.5*H,far=Y=>Math.abs(Y-H/2)>3*H;
+const apr=(xa,xe,inc)=>{const o=[];for(let k=1;k<=14;k++){const x=xe-(xe-xa)*Math.pow(2,-k),y=F(x);if(!isFinite(y))break;const Y=gy(y);o.push([x,Y]);if(far(Y))return o}if(inc){const y=F(xe);if(isFinite(y))o.push([xe,gy(y)])}return o};
+const dep=(xs,xb,inc)=>{const o=[];if(inc){const y=F(xs);if(isFinite(y))o.push([xs,gy(y)])}for(let j=14;j>=1;j--){const x=xs+(xb-xs)*Math.pow(2,-j),y=F(x);if(isFinite(y))o.push([x,gy(y)])}let st=0;for(let i=0;i<o.length;i++)if(!far(o[i][1])){st=Math.max(0,i-1);break}return o.slice(st)};
+const pole=(xa,xb)=>{let lo=xa,hi=xb;for(let i=0;i<40;i++){const m1=lo+(hi-lo)/3,m2=hi-(hi-lo)/3,u=F(m1),w=F(m2),A=isFinite(u)?Math.abs(u):1e300,B=isFinite(w)?Math.abs(w):1e300;if(A<B)lo=m1;else hi=m2}return(lo+hi)/2};
+const bis=(xf,xn)=>{let f=xf,n=xn;for(let i=0;i<40;i++){const m=(f+n)/2;if(isFinite(F(m)))f=m;else n=m}return f};
+const draw2=o=>{o.forEach((q,i)=>i?ctx.lineTo(gx(q[0]),q[1]):ctx.moveTo(gx(q[0]),q[1]))};
+let pen=false,py=0,pyw=0,pxw=0,bad=null;
+for(let px=0;px<=W;px++){const x=v.cx+(px-W/2)/s,y=F(x);
+if(!isFinite(y)){if(pen&&vis(py))apr(pxw,bis(pxw,x),true).forEach(q=>ctx.lineTo(gx(q[0]),q[1]));pen=false;bad=x;continue}
+const Y=gy(y);let brk=false;
+if(pen){const dj=Math.abs(Y-py);if(dj>H*1.5)brk=true;else if(dj>H*0.1){const ym=F(x-0.5/s);if(!isFinite(ym)||Math.abs(ym-(pyw+y)/2)>0.5*Math.abs(y-pyw))brk=true}}
+if(brk){pen=false;if(vis(py)||vis(Y)){const p=pole(pxw,x);apr(pxw,p,false).forEach(q=>ctx.lineTo(gx(q[0]),q[1]));const d=dep(p,x,false);if(d.length){draw2(d);pen=true}}}
+else if(!pen&&bad!==null&&vis(Y)){const d=dep(bis(x,bad),x,true);if(d.length){draw2(d);pen=true}}
+bad=null;pen?ctx.lineTo(px,Y):ctx.moveTo(px,Y);pen=true;py=Y;pyw=y;pxw=x}}
 else if(c.k==='pol'){let pen=false;
 for(let t=0,dt=(S.anim||S.drag)?0.025:0.01;t<=12*Math.PI;t+=dt){sc.t=t;const r=ev(c,sc);if(!isFinite(r)){pen=false;continue}
 const X=gx(r*Math.cos(t)),Y=gy(r*Math.sin(t));pen?ctx.lineTo(X,Y):ctx.moveTo(X,Y);pen=true}}
