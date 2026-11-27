@@ -94,7 +94,7 @@ $('#msz').addEventListener('change',e=>{S.mat.n=+e.target.value;syncMat();req()}
 $('#mpre').addEventListener('change',e=>{const n=S.mat.n,p=PRE[n][+e.target.value][1];if(p){const A=n===2?S.mat.m2:S.mat.m3,k=e.target.value;p.forEach((z,i)=>A[i]=z);syncMat();$('#mpre').value=k;req()}});
 $('#mt').addEventListener('input',e=>{S.mat.t=+e.target.value;$('#mtv').textContent=e.target.value;req()});
 syncMat();
-async function recVideo(){if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){msg('Video recording is not supported in this browser.');return}
+async function recVideoLegacy(){if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){msg('Video recording is not supported in this browser.');return}
 const secs=+$('#vdur').value,types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'],mt=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
 const was=S.anim;if(!was)setAnim(true);
 try{await Promise.all([document.fonts.load('20px "EG Math"'),document.fonts.load('700 15px "DM Sans"'),document.fonts.load('400 15px "DM Sans"')])}catch(e){}
@@ -106,6 +106,27 @@ rec.start(200);$('#vrec').disabled=true;let left=secs;msg('Recording… '+left+'
 await new Promise(r=>setTimeout(r,secs*1000));on=false;clearInterval(iv);rec.stop();await done;if(!was)setAnim(false);$('#vrec').disabled=false;
 const type=rec.mimeType||mt||'video/webm',blob=new Blob(chunks,{type}),ext=/mp4/.test(type)?'mp4':'webm',vp=$('#vpv');vp.src=URL.createObjectURL(blob);vp.hidden=false;
 const ok=await saveFile(blob,'eigengrid-art.'+ext);msg(ok?'Video ready.':'Download started. If nothing was saved, press and hold the video below.')}
+async function renderMp4(){
+const secs=+$('#vdur').value,fps=30,N=secs*fps;
+try{await Promise.all([document.fonts.load('20px "EG Math"'),document.fonts.load('700 15px "DM Sans"'),document.fonts.load('400 15px "DM Sans"')])}catch(e){}
+const T0=TH[S.theme],band=S.cap?capBand(W,T0):null,bh=band?band.h:0,k=Math.min(3,1080/Math.max(W,H+bh)),vw=Math.max(2,Math.round(W*k/2)*2),vh=Math.max(2,Math.round((H+bh)*k/2)*2);
+let cfg=null;for(const codec of ['avc1.640028','avc1.4d0028','avc1.42002a','avc1.42001f']){const c={codec,width:vw,height:vh,bitrate:10e6,framerate:fps,avc:{format:'avc'}};try{const r=await VideoEncoder.isConfigSupported(c);if(r&&r.supported){cfg=c;break}}catch(e){}}
+if(!cfg)throw new Error('this browser has no H.264 encoder');
+const rc=document.createElement('canvas');rc.width=vw;rc.height=vh;const rx=rc.getContext('2d');let mux=null,err=null;
+const enc=new VideoEncoder({output:(ch,meta)=>{const d=new Uint8Array(ch.byteLength);ch.copyTo(d);if(!mux){const ds=meta&&meta.decoderConfig&&meta.decoderConfig.description;if(!ds){err=new Error('the encoder gave no stream header');return}const u=ds instanceof ArrayBuffer?new Uint8Array(ds):new Uint8Array(ds.buffer,ds.byteOffset,ds.byteLength);mux=new Mp4Writer(vw,vh,fps,u.slice())}mux.addChunk(d,ch.type==='key')},error:e=>{err=e}});
+enc.configure(cfg);
+const was=S.anim,tm0=S.params.time,a0=S.rot.a;setAnim(false);S.vid=true;S.rec=true;$('#vrec').disabled=true;
+try{for(let i=0;i<N;i++){S.params.time=tm0+i/fps;if(rot3())S.rot.a=a0+0.6*i/fps;
+rx.setTransform(vw/W,0,0,vh/(H+bh),0,0);draw(rx,W,H,T0,{grid:S.grid,glow:S.glow,cap:false});if(band)band.dr(rx,H);
+const fr=new VideoFrame(rc,{timestamp:Math.round(i*1e6/fps),duration:Math.round(1e6/fps)});enc.encode(fr,{keyFrame:i%fps===0});fr.close();
+if(err)throw err;while(enc.encodeQueueSize>6){await new Promise(r=>setTimeout(r,5));if(err)throw err}
+if(i%3===0){msg('Rendering video… '+Math.round(100*i/N)+'%');await new Promise(r=>setTimeout(r,0))}}
+await enc.flush();if(err)throw err}
+finally{S.vid=false;S.rec=false;S.params.time=tm0;S.rot.a=a0;$('#vrec').disabled=false;if(was)setAnim(true);req();try{enc.close()}catch(e){}}
+if(!mux)throw new Error('no video data was produced');
+const blob=mux.finish(),vp=$('#vpv');vp.src=URL.createObjectURL(blob);vp.hidden=false;
+const ok=await saveFile(blob,'eigengrid-art.mp4');msg(ok?'Video ready (MP4, '+vw+'×'+vh+').':'Download started. If nothing was saved, press and hold the video below.')}
+async function recVideo(){if(window.VideoEncoder&&window.VideoFrame){try{await renderMp4();return}catch(e){msg('Could not make the high-quality video ('+(e&&e.message?e.message:'error')+'). Using the simple recorder instead.');await new Promise(r=>setTimeout(r,1500))}}await recVideoLegacy()}
 $('#vrec').addEventListener('click',recVideo);
 const EX={plot:[['Sine with slider','y=a*sin(x)'],['Parabola','y=x^2/4'],['Circle','x^2+y^2=25'],['Polar rose','r=5*cos(3*t)'],['Inequality','y>x^2'],['Piecewise','y={x<0: -x, x>=0: x^2}'],['Slope field',"y'=x-y"],['Parametric','(cos(t), sin(2*t))'],['Absolute value','y=abs(x)']],
 surf:[['Wave','z=sin(x)*cos(y)'],['Ripple','z=sin(sqrt(x^2+y^2))'],['Saddle','z=(x^2-y^2)/4'],['Sphere','x^2+y^2+z^2=9'],['Cylinder','x^2+y^2=4'],['Torus','((2+cos(v))*cos(u), (2+cos(v))*sin(u), sin(v)); u=0..6.28, v=0..6.28'],['Helix','(cos(t), sin(t), t/3); t=0..20'],['Moving wave','z=sin(x+time)*cos(y)']],
